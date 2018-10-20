@@ -21,3 +21,15 @@ libm <- log(ibm+1)*100
 t.test(libm)
 
 normalTest(libm,method = 'jb')
+
+da <- read.table("m-gm3dx7508.txt",header = T)
+
+gm <- da[,2]
+
+gm1 <- ts(gm,frequency = 12,start = c(1975,1))
+
+plot(gm1)
+
+acf(gm)  ## no autocorrelation
+
+
