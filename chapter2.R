@@ -146,3 +146,74 @@ acf(diff(da$X.71))
 plot(diff(da$X.71),type='l')
 
 plot(diff(diff(da$X.71),4),type='l')
+
+#############
+
+da <- read.table("m-deciles08.txt",header = T)
+
+d1 <- da[,2]
+
+jan <- rep(c(1,rep(0,11)),39)  # jan dummy
+
+m1 <- lm(d1~jan)
+
+summary(m1)
+
+m2 <- arima(d1,order=c(1,0,0),seasonal = c(1,0,1))
+
+print(m2)
+
+########
+
+oneyr <- read.table("wgs1yr.dat")[,2]
+
+threeyr <- read.table("wgs3yr.dat")[,2]
+
+plot(oneyr,type='l')
+lines(threeyr, type='l', col = "green")
+
+model <- lm(threeyr ~ oneyr)
+
+summary(model)
+
+rstu_resdi <- rstudent(model)
+
+plot(y=rstu_resdi,x=model$fitted.values)
+
+acf(model$residuals)
+
+adf.test(rstu_resdi)
+
+acf(rstu_resdi)
+
+###############
+
+c3 <- diff(threeyr)
+
+c1 <- diff(oneyr)
+
+model2 <- lm(c3~c1)
+
+summary(model2)
+
+acf(model2$residuals)
+
+model_resid <- arima(model2$residuals,order=c(0,1,1))
+
+#####
+
+model <- arima(c3, order = c(0,0,1), xreg = c1, include.mean = F)  ## regression with MA error
+
+acf(model$residuals)  ## it has some auto correlation at lag 4
+
+####
+
+model2 <- lm(c3~c1)
+
+library(lmtest)
+library(plm)
+library(sandwich)
+
+coeftest(model2, vcov.=vcovHC(model2, type="HC1"))
+
+coeftest(model2, vcov.=NeweyWest(model2, lag=0, adjust=TRUE, verbose=TRUE))
