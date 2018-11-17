@@ -50,3 +50,65 @@ model_arch_3 <- fGarch::garchFit(~garch(1,0),data = exchanges[,2], trace = F)
 summary(model_arch_3)
 
 pacf(exchanges[,2]^2)
+
+############
+
+sp <- read.table("sp500.dat",header = T)
+
+acf(sp)
+
+pacf(sp^2)
+
+model_garch <- garchFit(~ arma(3,0) + garch(1,1), data = sp, trace = F)
+
+summary(model_garch)
+
+model_garch <- garchFit(~ garch(1,1), data = sp, trace = F)
+
+summary(model_garch)
+
+resid <- model_garch@residuals/model_garch@sigma.t
+
+acf(resid)
+
+acf(resid^2)
+
+Box.test(resid,lag=12,type="Ljung")
+
+Box.test(resid,lag=24,type="Ljung")   ## Stationarity test
+
+predict(model_garch,5)
+
+##############
+
+model_garch <- garchFit(~ garch(1,1), data = sp, trace = F, cond.dist = "std")
+
+summary(model_garch)
+
+resid <- model_garch@residuals/model_garch@sigma.t
+
+acf(resid)
+
+acf(resid^2)
+
+Box.test(resid,lag=12,type="Ljung")
+
+Box.test(resid,lag=24,type="Ljung")   ## Stationarity test
+
+predict(model_garch,5)
+
+############
+
+library(rugarch)
+
+ewma_spec = ugarchspec(variance.model=list(model="iGARCH", garchOrder=c(1,1)), 
+                       mean.model=list(armaOrder=c(0,0), include.mean=TRUE),  
+                       distribution.model="norm")
+
+ugfit = ugarchfit(spec = ewma_spec, data = sp)
+
+print(ugfit)
+
+source("garchm.R")
+
+garchm <- garchM(sp$X0.0225)
